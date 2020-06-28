@@ -1,4 +1,8 @@
+from compadre_core import refresh_request
 from datetime import datetime
+import sqlite3
+from time import sleep
+
 
 class ForkLift:
 
@@ -22,12 +26,16 @@ class ForkLift:
 
 	@staticmethod
 	def wrap_up(sql):
-		request = refresh_request()
-		output = request.query(sql)
-		request.commit()
-		request.cursor.close()
+		conn = sqlite3.connect('testy.db')
+		c = conn.cursor()
+		
+		c.execute(sql)
+		conn.commit()
+		output = c.lastrowid
 
-		return output[0]['id']
+		print(output)
+
+		return output
 
 	@staticmethod
 	def inject_now(self):
@@ -42,7 +50,7 @@ class ForkLift:
 		
 		self.inject_now(self)
 		sql = f'INSERT INTO id_source(version, batch_key, created_on, created_at) VALUES \
-				(\'{self.version}\', \'{self.batch}\', \'{self.date}\', \'{self.time}\') RETURNING id'
+				(\'{self.version}\', \'{self.batch}\', \'{self.date}\', \'{self.time}\')'
 		
 		result_id = self.wrap_up(sql)
 
@@ -55,8 +63,8 @@ class ForkLift:
 		self.batch=True
 		self.batch_key = self.gen_pkey(self.batch)
 
-		sql = f'INSERT INTO batch_audit(id, created_on, created_at) VALUES \
-				(\'{self.batch_key}\', \'{self.date}\', \'{self.time}\') RETURNING id'
+		sql = f'INSERT INTO batch_audit(row_id, created_on, created_at) VALUES \
+				(\'{self.batch_key}\', \'{self.date}\', \'{self.time}\')'
 	
 		batch_id = self.wrap_up(sql)
 
@@ -70,9 +78,9 @@ class ForkLift:
 		self.proc_key = self.gen_pkey(self.batch)
 		self.proc_action = proc_action
 
-		sql = f'INSERT INTO proc_audit(id, batch_id, proc_action, created_on, created_at) VALUES \
+		sql = f'INSERT INTO proc_audit(row_id, batch_id, proc_action, created_on, created_at) VALUES \
 				(\'{self.proc_key}\', \'{self.batch_key}\', \'{self.proc_action}\', \
-				 \'{self.date}\', \'{self.time}\') RETURNING id'
+				 \'{self.date}\', \'{self.time}\')'
 	
 		proc_id = self.wrap_up(sql)
 
@@ -87,12 +95,12 @@ class ForkLift:
 		if insert:
 			sql = f'INSERT INTO etl_audit(batch_id, proc_id, row_id, status_id, updated_on, updated_at) \
 					VALUES (\'{self.batch_key}\', \'{self.proc_key}\', \'{row_key}\', \'1\', \
-					\'{self.date}\', \'{self.time}\') RETURNING id'
+					\'{self.date}\', \'{self.time}\')'
 		else:
 			sql = f'UPDATE etl_audit SET status_id = {status}, \
 					updated_on = \'{self.date}\', updated_at = \'{self.time}\' \
 					WHERE batch_id = {self.batch_key} AND proc_id = {self.proc_key} \
-					AND row_id = {row_key} RETURNING id'
+					AND row_id = {row_key}'
 
 		etl_id = self.wrap_up(sql)
 		self.etl_key = etl_id
@@ -104,9 +112,23 @@ class ForkLift:
 
 		self.inject_now(self)
 		sql = f'INSERT INTO etl_outcome(etl_id, message, created_on, created_at) VALUES \
-				(\'{self.etl_key}\', \'{message}\', \'{self.date}\', \'{self.time}\') RETURNING id'
+				(\'{self.etl_key}\', \'{message}\', \'{self.date}\', \'{self.time}\')'
 		outcome_id = self.wrap_up(sql)
 
 		self.outcome_key = outcome_id
 
 		return outcome_id
+
+
+
+def build_warehouse():
+	conn = sqlite3.connect('testy.db')
+	c = conn.cursor()
+
+	import __model__ as model
+	sql_list = model.sql_list
+
+	for sql in sql_list:
+		c.execute(sql)
+		conn.commit()
+	conn.close()
