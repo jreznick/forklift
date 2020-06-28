@@ -1,7 +1,5 @@
-from compadre_core import refresh_request
 from datetime import datetime
 import sqlite3
-from time import sleep
 
 import __auth__ as auth
 DB_NAME = auth.db_name
@@ -120,11 +118,8 @@ class ForkLift:
 
 		return outcome_id
 
-
-
 def build_warehouse():
-	import __auth__ as auth
-	db_name = auth.db_name
+	
 	conn = sqlite3.connect(f'{DB_NAME}')
 	c = conn.cursor()
 
