@@ -27,7 +27,7 @@ class ForkLift:
 	@staticmethod
 	def wrap_up(sql):
 		conn = sqlite3.connect(f'{DB_NAME}')
-		
+		c = conn.cursor()
 		c.execute(sql)
 		conn.commit()
 		output = c.lastrowid
@@ -117,6 +117,16 @@ class ForkLift:
 		self.outcome_key = outcome_id
 
 		return outcome_id
+
+def show_table(table_name):
+
+	conn = sqlite3.connect(f'{DB_NAME}')
+	c = conn.cursor()
+	sql = f'SELECT * FROM {table_name}'
+	c.execute(sql)
+	output = c.fetchall()
+
+	return output
 
 def build_warehouse():
 	

@@ -63,7 +63,7 @@ sql_list = [
 	)',
 
 	f'INSERT INTO proc_status(status) VALUES \
-	(\'PENTDING\'), \
+	(\'PENDING\'), \
 	(\'ERROR\'), \
 	(\'SKIPPED\'), \
 	(\'COMPLETE\')',
