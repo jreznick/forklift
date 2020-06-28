@@ -3,6 +3,8 @@ from datetime import datetime
 import sqlite3
 from time import sleep
 
+import __auth__ as auth
+DB_NAME = auth.db_name
 
 class ForkLift:
 
@@ -26,8 +28,7 @@ class ForkLift:
 
 	@staticmethod
 	def wrap_up(sql):
-		conn = sqlite3.connect('testy.db')
-		c = conn.cursor()
+		conn = sqlite3.connect(f'{DB_NAME}')
 		
 		c.execute(sql)
 		conn.commit()
@@ -122,7 +123,9 @@ class ForkLift:
 
 
 def build_warehouse():
-	conn = sqlite3.connect('testy.db')
+	import __auth__ as auth
+	db_name = auth.db_name
+	conn = sqlite3.connect(f'{DB_NAME}')
 	c = conn.cursor()
 
 	import __model__ as model
