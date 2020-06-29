@@ -27,7 +27,7 @@ for row in c.execute('SELECT * FROM id_source'):
 conn.close()
 
 def build_warehouse():
-	conn = sqlite3.connect('test.db')
+	conn = sqlite3.connect('testy.db')
 	c = conn.cursor()
 
 	import __model__ as model
